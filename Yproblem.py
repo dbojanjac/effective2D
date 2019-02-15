@@ -3,6 +3,7 @@
 # and outside material matrix with outer_permittivity (mesh.subdomain = 2)
 
 # Function call: python3 Yproblem.py mesh_folder mesh_name
+# ie. python3 Yproblem.py mesh hexagonal
 
 # input = unit_cell mesh with subdomain markers in .h5 format
 # output = txt file with 2x2 matrix of effective permittivity
@@ -20,7 +21,7 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     mesh_folder = mesh_folder + '/'
 
     mesh = Mesh()
-    hdf = HDF5File(mesh.mpi_comm(), mesh_folder + mesh_name, 'r')
+    hdf = HDF5File(mesh.mpi_comm(), mesh_folder + mesh_name + '.h5', 'r')
 
     hdf.read(mesh, mesh_folder + "mesh", False)
     markers = MeshFunction('int', mesh)
@@ -134,5 +135,8 @@ if __name__ == '__main__':
     F1, F2 = Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
 
     # Save Correctors to XDMF File
-    xdmffile_F1 = XDMFFile('results/XDMF/F1.xdmf');   xdmffile_F1.write(F1)
-    xdmffile_F2 = XDMFFile('results/XDMF/F2.xdmf');   xdmffile_F2.write(F2)
+    xdmffile_F1 = XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
+    xdmffile_F1.write(F1)
+
+    xdmffile_F2 = XDMFFile('results/XDMF/F2_' + mesh_name + '.xdmf');
+    xdmffile_F2.write(F2)
