@@ -2,11 +2,11 @@
 # structure made of inner inclusions with inner_permittivity (mesh.subdomain = 1)
 # and outside material matrix with outer_permittivity (mesh.subdomain = 2)
 
+# Function call: python3 Yproblem.py mesh_folder mesh_name
+
 # input = unit_cell mesh with subdomain markers in .h5 format
 # output = txt file with 2x2 matrix of effective permittivity
 # output = txt file with 2x2 matrix of effective permittivity
-
-# Function call: python3 Yproblem.py mesh_folder mesh_name
 
 # Using FEniCS 2017.2.0
 from dolfin import *
