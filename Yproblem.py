@@ -1,8 +1,8 @@
 # FEM based solver for calculating effective permittivity of a heterogeneous
-# structure made of inclusions with inner permittivity (markers = 1) and
-# outside matrix with outer_permittivity (markers = 2)
+# structure made of inner inclusions with inner_permittivity (mesh.subdomain = 1)
+# and outside material matrix with outer_permittivity (mesh.subdomain = 2)
 
-# input = unit_cell mesh with subdomain markers
+# input = unit_cell mesh with subdomain markers in .h5 format
 # output = txt file with 2x2 matrix of effective permittivity
 # output = txt file with 2x2 matrix of effective permittivity
 
@@ -104,7 +104,7 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     A21 = 0
     A22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
 
-    # Write calculated effective parameters to the file permittivity (2x2 matrix)
+    # Write calculated effective parameters to the file effective (2x2 matrix)
     #---------------------------------------------------------------------------
     ofile = open('effective', 'w')
 
