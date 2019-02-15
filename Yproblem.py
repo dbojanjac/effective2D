@@ -6,20 +6,24 @@
 # output = txt file with 2x2 matrix of effective permittivity
 # output = txt file with 2x2 matrix of effective permittivity
 
+# Using FEniCS 2017.2.0
+
 from dolfin import *
 
-def Y_solver(Mesh_Folder, Mesh_Name):
 
-    # Read Mesh from Mesh_Folder/Mesh
+def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
+    """Unit cell solver function"""
+
+    # Read mesh and markers from mesh_folder/Mesh
     #---------------------------------------------------------------------------
-    Mesh_Folder = Mesh_Folder + '/'
+    mesh_folder = mesh_folder + '/'
 
     mesh = Mesh()
-    hdf = HDF5File(mesh.mpi_comm(), Mesh_Folder + Mesh_Name, 'r')
+    hdf = HDF5File(mesh.mpi_comm(), mesh_folder + mesh_name, 'r')
 
-    hdf.read(mesh, Mesh_Folder + "mesh", False)
+    hdf.read(mesh, mesh_folder + "mesh", False)
     markers = MeshFunction('int', mesh)
-    hdf.read(markers, Mesh_Folder + "subdomains")
+    hdf.read(markers, mesh_folder + "subdomains")
 
     #---------------------------------------------------------------------------
     # Periodic boundary condition map
@@ -39,15 +43,17 @@ def Y_solver(Mesh_Folder, Mesh_Name):
             if near(x[0], 1) and near(x[1], 1):
                 y[0] = x[0] - 1.
                 y[1] = x[1] - 1.
+
             elif near(x[0], 1): # if on right boundary
                 y[0] = x[0] - 1.
                 y[1] = x[1]
+
             else:   # if on upper boundary
                 y[0] = x[0]
                 y[1] = x[1] - 1.
 
-    # Function space with periodic boundary condition
-    V = FunctionSpace(mesh, "P", 1, constrained_domain=PeriodicBoundary())
+    # Function space P1 with periodic boundary conditions
+    V = FunctionSpace(mesh, "P", 1, constrained_domain = PeriodicBoundary())
 
     #---------------------------------------------------------------------------
     # Permittivity coefficient previously defined subdomains
@@ -78,7 +84,7 @@ def Y_solver(Mesh_Folder, Mesh_Name):
 
     # System assembly
     #---------------------------------------------------------------------------
-    # Solution Functions
+    # Solution Functions (Correctors)
     f1 = Function(V); F1 = f1.vector()
     f2 = Function(V); F2 = f2.vector()
 
@@ -89,7 +95,6 @@ def Y_solver(Mesh_Folder, Mesh_Name):
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
-
     A11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
     A12 = 0
     A21 = 0
@@ -113,16 +118,16 @@ def Y_solver(Mesh_Folder, Mesh_Name):
 
 if __name__ == '__main__':
 
-    # Domain defining Coefficients
+    # Domain defining permittivity coefficients
     inner_permittivity = 1
     outer_permittivity = 11.7
 
-    # Mesh Defining Parameters
-    Mesh_Folder = 'mesh'; Mesh_Name = 'Ymesh' + '.h5'
+    # Mesh defining parameters
+    mesh_folder = 'mesh'; mesh_name = 'Ymesh' + '.h5'
 
     # Call Y_solver
-    F1, F2 = Y_solver(Mesh_Folder, Mesh_Name)
+    F1, F2 = Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
 
     # Save Correctors to XDMF File
-    xdmffile_F1 = XDMFFile('rezultati/XDMF/F1.xdmf');   xdmffile_F1.write(F1)
-    xdmffile_F2 = XDMFFile('rezultati/XDMF/F2.xdmf');   xdmffile_F2.write(F2)
+    xdmffile_F1 = XDMFFile('results/XDMF/F1.xdmf');   xdmffile_F1.write(F1)
+    xdmffile_F2 = XDMFFile('results/XDMF/F2.xdmf');   xdmffile_F2.write(F2)
