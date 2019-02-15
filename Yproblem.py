@@ -98,17 +98,17 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
-    permittivity_11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
-    permittivity_12 = 0
-    permittivity_21 = 0
-    permittivity_22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
+    effective_11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
+    effective_12 = 0
+    effective_21 = 0
+    effective_22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
 
     # Write calculated effective parameters to the file effective (2x2 matrix)
     #---------------------------------------------------------------------------
     ofile = open('effective', 'w')
 
-    ofile.write('%12.6e %12.6e \n' %(permittivity_11, permittivity_12))
-    ofile.write('%12.6e %12.6e \n' %(permittivity_21, permittivity_22))
+    ofile.write('%12.6e %12.6e \n' %(effective_11, effective_12))
+    ofile.write('%12.6e %12.6e \n' %(effective_21, effective_22))
 
     ofile.close()
 
