@@ -30,7 +30,6 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     #---------------------------------------------------------------------------
     class PeriodicBoundary(SubDomain):
 
-        # Left boundary is "target domain" G
         def inside(self, x, on_boundary):
             # return True if on left or bottom boundary AND NOT on one of the
             # two corners (0, 1) and (1, 0)
@@ -39,16 +38,19 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
                             (near(x[0], 1) and near(x[1], 0)))) and on_boundary)
 
         def map(self, x, y):
+
             # if on right upper corner copy it to left down corner
             if near(x[0], 1) and near(x[1], 1):
                 y[0] = x[0] - 1.
                 y[1] = x[1] - 1.
 
-            elif near(x[0], 1): # if on right boundary
+            # if on right boundary copy it to the left boundary
+            elif near(x[0], 1):
                 y[0] = x[0] - 1.
                 y[1] = x[1]
 
-            else:   # if on upper boundary
+            # if on upper boundary copy it to the lower boundary
+            else:
                 y[0] = x[0]
                 y[1] = x[1] - 1.
 
@@ -56,18 +58,20 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     V = FunctionSpace(mesh, "P", 1, constrained_domain = PeriodicBoundary())
 
     #---------------------------------------------------------------------------
-    # Permittivity coefficient previously defined subdomains
+    # Permittivity coefficient for previously defined subdomains
     #---------------------------------------------------------------------------
     class Coeff(Expression):
+
         def __init__(self, mesh, **kwargs):
             self.markers = markers
+
         def eval_cell(self, values, x, cell):
             if markers[cell.index] == 1:
                 values[0] = inner_permittivity
             else:
                 values[0] = outer_permittivity
 
-    permittivity = Coeff(mesh, degree=0)
+    permittivity = Coeff(mesh, degree = 0)
 
     # Weak formulation
     #---------------------------------------------------------------------------
