@@ -6,9 +6,11 @@
 # output = txt file with 2x2 matrix of effective permittivity
 # output = txt file with 2x2 matrix of effective permittivity
 
+# Function call: python3 Yproblem.py mesh_folder mesh_name
 
 # Using FEniCS 2017.2.0
 from dolfin import *
+import sys
 
 
 def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
@@ -126,7 +128,8 @@ if __name__ == '__main__':
     outer_permittivity = 11.7
 
     # Mesh defining parameters
-    mesh_folder = 'mesh'; mesh_name = 'Ymesh' + '.h5'
+    mesh_folder = sys.argv[1]
+    mesh_name = sys.argv[2]
 
     # Call Y_solver
     F1, F2 = Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
