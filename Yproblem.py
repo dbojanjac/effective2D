@@ -92,24 +92,23 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     f1 = Function(V); F1 = f1.vector()
     f2 = Function(V); F2 = f2.vector()
 
-    # Assemble RHS, LHS and solve the system
+    # Assemble LHS, RHS and solve the system A*F=b
     A1 = assemble(a1);  b1 = assemble(L1);  solve(A1, F1, b1)
-
     A2 = assemble(a2);  b2 = assemble(L2);  solve(A2, F2, b2)
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
-    A11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
-    A12 = 0
-    A21 = 0
-    A22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
+    permittivity_11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
+    permittivity_12 = 0
+    permittivity_21 = 0
+    permittivity_22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
 
     # Write calculated effective parameters to the file effective (2x2 matrix)
     #---------------------------------------------------------------------------
     ofile = open('effective', 'w')
 
-    ofile.write('%12.6e %12.6e \n' %(A11, A12))
-    ofile.write('%12.6e %12.6e \n' %(A21, A22))
+    ofile.write('%12.6e %12.6e \n' %(permittivity_11, permittivity_12))
+    ofile.write('%12.6e %12.6e \n' %(permittivity_21, permittivity_22))
 
     ofile.close()
 
