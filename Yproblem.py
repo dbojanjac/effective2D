@@ -14,7 +14,7 @@ from dolfin import *
 def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     """Unit cell solver function"""
 
-    # Read mesh and markers from mesh_folder/mesh_name
+    # Read mesh and subdomain markers from mesh_folder/mesh_name
     #---------------------------------------------------------------------------
     mesh_folder = mesh_folder + '/'
 
