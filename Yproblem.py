@@ -6,7 +6,6 @@
 
 # input = unit_cell mesh with subdomain markers in .h5 format
 # output = txt file with 2x2 matrix of effective permittivity
-# output = txt file with 2x2 matrix of effective permittivity
 
 # Using FEniCS 2017.2.0
 from dolfin import *
