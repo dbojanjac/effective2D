@@ -4,6 +4,7 @@
 
 # input = unit_cell mesh with subdomain markers
 # output = txt file with 2x2 matrix of effective permittivity
+# output = txt file with 2x2 matrix of effective permittivity
 
 from dolfin import *
 
@@ -88,14 +89,13 @@ def Y_solver(Mesh_Folder, Mesh_Name):
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
-    PER_V = interpolate(permittivity, V)
 
-    A11 = assemble(PER_V * (Dx(f1, 0) + 1) * dx)
-    A12 = assemble(PER_V * Dx(f2, 0) * dx)
-    A21 = assemble(PER_V * Dx(f1, 1) * dx)
-    A22 = assemble(PER_V * (Dx(f2, 1) + 1) * dx)
+    A11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
+    A12 = 0
+    A21 = 0
+    A22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
 
-    # Write to the file permittivity
+    # Write calculated effective parameters to the file permittivity (2x2 matrix)
     #---------------------------------------------------------------------------
     ofile = open('effective', 'w')
 
@@ -114,7 +114,8 @@ def Y_solver(Mesh_Folder, Mesh_Name):
 if __name__ == '__main__':
 
     # Domain defining Coefficients
-    inner_permittivity = 1; outer_permittivity = 11.7
+    inner_permittivity = 1
+    outer_permittivity = 11.7
 
     # Mesh Defining Parameters
     Mesh_Folder = 'mesh'; Mesh_Name = 'Ymesh' + '.h5'
