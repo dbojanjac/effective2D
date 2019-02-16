@@ -13,7 +13,7 @@ from dolfin import *
 import sys
 
 
-def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
+def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     """Unit cell solver function"""
 
     # Read mesh and subdomain markers from mesh_folder/mesh_name
@@ -73,6 +73,7 @@ def Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
             else:
                 values[0] = outer_permittivity
 
+    # Interpolation to zeroth order polynomial
     permittivity = Coeff(mesh, degree = 0)
 
     # Weak formulation
@@ -131,8 +132,8 @@ if __name__ == '__main__':
     mesh_folder = sys.argv[1]
     mesh_name = sys.argv[2]
 
-    # Call Y_solver
-    F1, F2 = Y_solver(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
+    # Call Y_solver_2D
+    F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
 
     # Save Correctors to XDMF File
     xdmffile_F1 = XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
