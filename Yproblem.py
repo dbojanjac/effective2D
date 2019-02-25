@@ -2,6 +2,10 @@
 # structure made of inner inclusions with inner_permittivity (mesh.subdomain = 1)
 # and outside material matrix with outer_permittivity (mesh.subdomain = 2)
 
+    # Domain defining parameters (permittivity) are hardcoded in main part as:
+    #   patch_permittivity = 1
+    #   matrix_permittivity = 11.7
+
 # Function call: python3 Yproblem.py mesh_folder mesh_name
 # ie. python3 Yproblem.py mesh hexagonal
 
@@ -116,7 +120,7 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     ofile.close()
 
     return f1, f2
-
+#-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
 # Main part
@@ -124,13 +128,16 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
 if __name__ == '__main__':
 
-    # Domain defining permittivity coefficients
-    inner_permittivity = 1
-    outer_permittivity = 11.7
+    # Function call: python3 Yproblem.py mesh_folder mesh_name
+    # ie. python3 Yproblem.py mesh hexagonal
 
     # Mesh defining parameters
     mesh_folder = sys.argv[1]
     mesh_name = sys.argv[2]
+
+    # Domain defining permittivity coefficients
+    inner_permittivity = 1
+    outer_permittivity = 11.7
 
     # Call Y_solver_2D
     F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
