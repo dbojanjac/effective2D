@@ -131,7 +131,7 @@ if __name__ == '__main__':
     # Function call: python3 Yproblem.py mesh_folder mesh_name
     # ie. python3 Yproblem.py mesh hexagonal
 
-    # Mesh defining parameters
+    # Input parameters
     mesh_folder = sys.argv[1]
     mesh_name = sys.argv[2]
 
