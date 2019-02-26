@@ -13,7 +13,7 @@
 # output = txt file with 2x2 matrix of effective permittivity
 
 # Using FEniCS 2017.2.0
-from dolfin import *
+import dolfin as df
 import sys
 
 
@@ -24,34 +24,34 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     #---------------------------------------------------------------------------
     mesh_folder = mesh_folder + '/'
 
-    mesh = Mesh()
-    hdf = HDF5File(mesh.mpi_comm(), mesh_folder + mesh_name + '.h5', 'r')
+    mesh = df.Mesh()
+    hdf = df.HDF5File(mesh.mpi_comm(), mesh_folder + mesh_name + '.h5', 'r')
 
     hdf.read(mesh, mesh_folder + "mesh", False)
-    markers = MeshFunction('int', mesh)
+    markers = df.MeshFunction('int', mesh)
     hdf.read(markers, mesh_folder + "subdomains")
 
     #---------------------------------------------------------------------------
     # Periodic boundary condition map
     #---------------------------------------------------------------------------
-    class PeriodicBoundary(SubDomain):
+    class PeriodicBoundary(df.SubDomain):
 
         def inside(self, x, on_boundary):
             # return True if on left or bottom boundary AND NOT on one of the
             # two corners (0, 1) and (1, 0)
-            return bool((near(x[0], 0) or near(x[1], 0)) and
-                    (not ((near(x[0], 0) and near(x[1], 1)) or
-                            (near(x[0], 1) and near(x[1], 0)))) and on_boundary)
+            return bool((df.near(x[0], 0) or df.near(x[1], 0)) and
+                    (not ((df.near(x[0], 0) and df.near(x[1], 1)) or
+                            (df.near(x[0], 1) and df.near(x[1], 0)))) and on_boundary)
 
         def map(self, x, y):
 
             # if on right upper corner copy it to left down corner
-            if near(x[0], 1) and near(x[1], 1):
+            if df.near(x[0], 1) and df.near(x[1], 1):
                 y[0] = x[0] - 1.
                 y[1] = x[1] - 1.
 
             # if on right boundary copy it to the left boundary
-            elif near(x[0], 1):
+            elif df.near(x[0], 1):
                 y[0] = x[0] - 1.
                 y[1] = x[1]
 
@@ -61,12 +61,12 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
                 y[1] = x[1] - 1.
 
     # Function space P1 with periodic boundary conditions
-    V = FunctionSpace(mesh, "P", 1, constrained_domain = PeriodicBoundary())
+    V = df.FunctionSpace(mesh, "P", 1, constrained_domain = PeriodicBoundary())
 
     #---------------------------------------------------------------------------
     # Permittivity coefficient for previously defined subdomains
     #---------------------------------------------------------------------------
-    class Coeff(Expression):
+    class Coeff(df.Expression):
 
         def __init__(self, mesh, **kwargs):
             self.markers = markers
@@ -82,33 +82,33 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
     # Weak formulation
     #---------------------------------------------------------------------------
-    f1 = TrialFunction(V); f2 = TrialFunction(V)
-    v1 = TestFunction(V);  v2 = TestFunction(V)
+    f1 = df.TrialFunction(V); f2 = df.TrialFunction(V)
+    v1 = df.TestFunction(V);  v2 = df.TestFunction(V)
 
     # Variational form for the first corrector (f1)
-    a1 = permittivity * dot(grad(f1), grad(v1)) * dx
-    L1 = -Dx(v1, 0) * permittivity * dx
+    a1 = permittivity * df.dot(df.grad(f1), df.grad(v1)) * df.dx
+    L1 = - df.Dx(v1, 0) * permittivity * df.dx
 
     # Variational form for the second corrector (f2)
-    a2 = permittivity * dot(grad(f2), grad(v2)) * dx
-    L2 = -Dx(v2, 1) * permittivity * dx
+    a2 = permittivity * df.dot(df.grad(f2), df.grad(v2)) * df.dx
+    L2 = - df.Dx(v2, 1) * permittivity * df.dx
 
     # System assembly
     #---------------------------------------------------------------------------
     # Solution Functions (Correctors)
-    f1 = Function(V); F1 = f1.vector()
-    f2 = Function(V); F2 = f2.vector()
+    f1 = df.Function(V); F1 = f1.vector()
+    f2 = df.Function(V); F2 = f2.vector()
 
     # Assemble LHS, RHS and solve the system A*F=b
-    A1 = assemble(a1);  b1 = assemble(L1);  solve(A1, F1, b1)
-    A2 = assemble(a2);  b2 = assemble(L2);  solve(A2, F2, b2)
+    A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1)
+    A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2)
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
-    effective_11 = assemble(permittivity * (Dx(f1, 0) + 1) * dx)
+    effective_11 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
     effective_12 = 0
     effective_21 = 0
-    effective_22 = assemble(permittivity  * (Dx(f2, 1) + 1) * dx)
+    effective_22 = df.assemble(permittivity  * (df.Dx(f2, 1) + 1) * df.dx)
 
     # Write calculated effective parameters to the file effective (2x2 matrix)
     #---------------------------------------------------------------------------
@@ -143,8 +143,8 @@ if __name__ == '__main__':
     F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
 
     # Save Correctors to XDMF File
-    xdmffile_F1 = XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
+    xdmffile_F1 = df.XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
     xdmffile_F1.write(F1)
 
-    xdmffile_F2 = XDMFFile('results/XDMF/F2_' + mesh_name + '.xdmf');
+    xdmffile_F2 = df.XDMFFile('results/XDMF/F2_' + mesh_name + '.xdmf');
     xdmffile_F2.write(F2)
