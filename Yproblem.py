@@ -119,7 +119,7 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
     ofile.close()
 
-    return f1, f2
+    return mesh, f1, f2
 #-------------------------------------------------------------------------------
 
 def save_PVD(output_folder, output_name, u):
@@ -147,7 +147,7 @@ def save_HDF5(output_folder, mesh, mesh_name, Field, u):
         # Field:
         # u: function that will be saved in 'output_folder/Field_mesh_name.h5' file
 
-    hdf = df.HDF5File(mesh.mpi_comm(), output_folder + Field + '_' + mesh_name + '.h5', 'w')
+    hdf = df.HDF5File(mesh.mpi_comm(), output_folder + Field + mesh_name + '.h5', 'w')
     hdf.write(mesh, output_folder + 'mesh')
     hdf.write(u, output_folder + 'solution');
     hdf.close()
@@ -162,8 +162,8 @@ def save_HDF5(output_folder, mesh, mesh_name, Field, u):
 
 if __name__ == '__main__':
 
-    # Function call: python3 Yproblem.py mesh_folder mesh_name
-    # ie. python3 Yproblem.py mesh hexagonal
+    # Function call: python3 Yproblem.py mesh_folder mesh_name output_folder
+    # ie. python3 Yproblem.py mesh hexagonal results
 
     # Input parameters
     mesh_folder = sys.argv[1]
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     outer_permittivity = 11.7
 
     # Call Y_solver_2D
-    F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
+    mesh, F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
 
     # Save Correctors to XDMF File
     xdmffile_F1 = df.XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
@@ -188,5 +188,5 @@ if __name__ == '__main__':
     save_PVD(output_folder + '/PVD/', 'F1_' + mesh_name, F1);
     save_PVD(output_folder + '/PVD/', 'F2_' + mesh_name, F2)
 
-    #save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F1_' + mesh_name, F1)
-    #save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F2_' + mesh_name, F2)
+    save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F1_', F1)
+    save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F2_', F2)
