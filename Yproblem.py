@@ -122,9 +122,43 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     return f1, f2
 #-------------------------------------------------------------------------------
 
+def save_PVD(output_folder, output_name, u):
+    """Save function u and coresponding mesh to .pvd file format"""
+
+    # Input Variables:
+        # output_folder: folder where .h5 file will be store
+        # mesh_name: name of mesh containig .h5 file
+        # u: function that will be saved in 'output_folder/output_name.pvd'
+
+    vtkfile = df.File(output_folder + output_name + '.pvd')
+    vtkfile << u
+
+    return 0
+#-------------------------------------------------------------------------------
+
+
+def save_HDF5(output_folder, mesh, mesh_name, Field, u):
+    """Save function u and coresponding mesh to .h5 file format"""
+
+    # Input Variables:
+        # output_folder: folder where .h5 file will be store, format folder/
+        # mesh: mesh keeping variable
+        # mesh_name: name of .h5 file in which mesh is stored
+        # Field:
+        # u: function that will be saved in 'output_folder/Field_mesh_name.h5' file
+
+    hdf = df.HDF5File(mesh.mpi_comm(), output_folder + Field + '_' + mesh_name + '.h5', 'w')
+    hdf.write(mesh, output_folder + 'mesh')
+    hdf.write(u, output_folder + 'solution');
+    hdf.close()
+
+    return 0
+#-------------------------------------------------------------------------------
+
 #-------------------------------------------------------------------------------
 # Main part
 #-------------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
@@ -134,6 +168,7 @@ if __name__ == '__main__':
     # Input parameters
     mesh_folder = sys.argv[1]
     mesh_name = sys.argv[2]
+    output_folder = sys.argv[3]
 
     # Domain defining permittivity coefficients
     inner_permittivity = 1
@@ -148,3 +183,10 @@ if __name__ == '__main__':
 
     xdmffile_F2 = df.XDMFFile('results/XDMF/F2_' + mesh_name + '.xdmf');
     xdmffile_F2.write(F2)
+
+    # Output files in PVD (for ParaView) and HDF5 (for later processing) format
+    save_PVD(output_folder + '/PVD/', 'F1_' + mesh_name, F1);
+    save_PVD(output_folder + '/PVD/', 'F2_' + mesh_name, F2)
+
+    #save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F1_' + mesh_name, F1)
+    #save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F2_' + mesh_name, F2)
