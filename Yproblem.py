@@ -6,8 +6,8 @@
     #   patch_permittivity = 1
     #   matrix_permittivity = 11.7
 
-# Function call: python3 Yproblem.py mesh_folder mesh_name
-# ie. python3 Yproblem.py mesh hexagonal
+# Function call: python3 Yproblem.py mesh_folder mesh_name output_folder
+# ie. python3 Yproblem.py mesh hexagonal results
 
 # input = unit_cell mesh with subdomain markers in .h5 format
 # output = txt file with 2x2 matrix of effective permittivity
