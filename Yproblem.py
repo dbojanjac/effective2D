@@ -105,6 +105,8 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
+    permittivity = df.interpolate(permittivity, V)
+    
     effective_11 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
     effective_12 = 0
     effective_21 = 0
