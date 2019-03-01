@@ -7,7 +7,7 @@
  *    2: Outside material 1^2 (colored blue)
  *
  *  Input parameters:
- *    a: patch square side
+ *    a: square patch side length
  *
  * GMSH 3.0.6 version
  *********************************************************************/
