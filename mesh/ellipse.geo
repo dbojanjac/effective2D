@@ -1,35 +1,37 @@
 /*********************************************************************
  *
- * SQUARE PATCH unit cell in 2D by Dario Bojanjac
+ * ELLIPTIC PATCH unit cell in 2D by Dario Bojanjac
  *
  * Subdomains in Unit Cell mesh are annotated by:
- *    1: Square Patch a^2 inside unit cell (colored red)
+ *    1: Elliptic Patch with a and b semi axis inside unit cell (colored red)
  *    2: Outside material 1^2 (colored blue)
  *
  *  Input parameters:
- *    a: square patch side length
+ *    a: x axis length
+ *    b: y axis length
  *
  * GMSH 3.0.6 version
  *********************************************************************/
 
-a = 0.2;
+a = 0.3;
+b = 0.3;
 
 // Meshing parameters
-lc_patch = 30 * 1e-3;
-lc_centre = lc_patch;
-lc_outer = 20 * 1e-3;
+lc_patch = 10 * 1e-3;
+lc_centre = 30 * 1e-3;
+lc_outer = 30 * 1e-3;
 
-// Square Patch
-Point(1) = {0.5 - a / 2, 0.5 - a / 2, 0, lc_patch};
-Point(2) = {0.5 + a / 2, 0.5 - a / 2, 0, lc_patch};
-Point(3) = {0.5 + a / 2, 0.5 + a / 2, 0, lc_patch};
-Point(4) = {0.5 - a / 2, 0.5 + a / 2, 0, lc_patch};
+// Elliptic Patch
+Point(1) = {0.5 + a, 0.5, 0, lc_patch};
+Point(2) = {0.5, 0.5 + b, 0, lc_patch};
+Point(3) = {0.5 - a, 0.5, 0, lc_patch};
+Point(4) = {0.5, 0.5 - b, 0, lc_patch};
 Point(5) = {0.5, 0.5, 0, lc_centre};
 
-Line(1) = {1, 2};
-Line(2) = {2, 3};
-Line(3) = {3, 4};
-Line(4) = {4, 1};
+Ellipse(1) = {1, 5, 1, 2};
+Ellipse(2) = {2, 5, 2, 3};
+Ellipse(3) = {3, 5, 3, 4};
+Ellipse(4) = {4, 5, 4, 1};
 
 Line Loop(1) = {1, 2, 3, 4};
 Plane Surface(1) = {1};

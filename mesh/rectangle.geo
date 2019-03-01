@@ -1,29 +1,31 @@
 /*********************************************************************
  *
- * SQUARE PATCH unit cell in 2D by Dario Bojanjac
+ * RECTANGLE PATCH unit cell in 2D by Dario Bojanjac
  *
  * Subdomains in Unit Cell mesh are annotated by:
  *    1: Square Patch a^2 inside unit cell (colored red)
  *    2: Outside material 1^2 (colored blue)
  *
  *  Input parameters:
- *    a: square patch side length
+ *    a: rectangle patch side length in x direction
+ *    b: rectangle patch side length in y direction
  *
  * GMSH 3.0.6 version
  *********************************************************************/
 
-a = 0.2;
+a = 0.4;
+b = 0.2;
 
 // Meshing parameters
-lc_patch = 30 * 1e-3;
+lc_patch = 10 * 1e-3;
 lc_centre = lc_patch;
-lc_outer = 20 * 1e-3;
+lc_outer = 40 * 1e-3;
 
-// Square Patch
-Point(1) = {0.5 - a / 2, 0.5 - a / 2, 0, lc_patch};
-Point(2) = {0.5 + a / 2, 0.5 - a / 2, 0, lc_patch};
-Point(3) = {0.5 + a / 2, 0.5 + a / 2, 0, lc_patch};
-Point(4) = {0.5 - a / 2, 0.5 + a / 2, 0, lc_patch};
+// Rectangle Patch
+Point(1) = {0.5 - a / 2, 0.5 - b / 2, 0, lc_patch};
+Point(2) = {0.5 + a / 2, 0.5 - b / 2, 0, lc_patch};
+Point(3) = {0.5 + a / 2, 0.5 + b / 2, 0, lc_patch};
+Point(4) = {0.5 - a / 2, 0.5 + b / 2, 0, lc_patch};
 Point(5) = {0.5, 0.5, 0, lc_centre};
 
 Line(1) = {1, 2};
