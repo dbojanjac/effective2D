@@ -106,7 +106,7 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     # Effective permittivity calculation
     #---------------------------------------------------------------------------
     permittivity = df.interpolate(permittivity, V)
-    
+
     effective_11 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
     effective_12 = 0
     effective_21 = 0
@@ -121,38 +121,47 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
 
     ofile.close()
 
-    return mesh, f1, f2
+    return mesh, markers, f1, f2
 #-------------------------------------------------------------------------------
 
 
-def save_PVD(output_folder, output_name, u):
-    """Save function u and coresponding mesh to .pvd file format"""
-
+def save_PVD(output_folder, output_name, output_file):
+    """Save function output_file to .pvd file format"""
     # Input Variables:
-        # output_folder: folder where .h5 file will be store
-        # mesh_name: name of mesh containig .h5 file
-        # u: function that will be saved in 'output_folder/output_name.pvd'
+        # output_folder: folder where .h5 file will be store, format folder/
+        # mesh_name: name of .h5 file in which mesh is stored
+        # output_file: function that will be saved in
+        #   'output_folder/Field_mesh_name.pvd' file
+
+    # Output:
+        # function output_file will be saved to output_folder/output_file.pvd
 
     vtkfile = df.File(output_folder + output_name + '.pvd')
-    vtkfile << u
+    vtkfile << output_file
 
     return 0
 #-------------------------------------------------------------------------------
 
 
-def save_HDF5(output_folder, mesh, mesh_name, Field, u):
-    """Save function u and coresponding mesh to .h5 file format"""
-
+def save_HDF5(output_folder, output_name, mesh, markers, output_file):
+    """Save function output_file and coresponding mesh to .h5 file format"""
     # Input Variables:
-        # output_folder: folder where .h5 file will be store, format folder/
-        # mesh: mesh keeping variable
-        # mesh_name: name of .h5 file in which mesh is stored
-        # Field:
-        # u: function that will be saved in 'output_folder/Field_mesh_name.h5' file
+        # output_folder: folder where .h5 file will be store
+        # output_name: name of the output file
+        # mesh: FEniCS mesh function
+        # markers: FEniCS subdomains function
+        # output_file: function that will be saved in output
 
-    hdf = df.HDF5File(mesh.mpi_comm(), output_folder + Field + mesh_name + '.h5', 'w')
+    # Output:
+        # function output_file will be saved to output_folder/output_file.h5
+
+    # Open file output_folder/output_name.h5 for writing
+    hdf = df.HDF5File(mesh.mpi_comm(), output_folder + output_name + '.h5', 'w')
+
     hdf.write(mesh, output_folder + 'mesh')
-    hdf.write(u, output_folder + 'solution');
+    hdf.write(markers, output_folder + 'subdomains')
+    hdf.write(output_file, output_folder + 'solution');
+
     hdf.close()
 
     return 0
@@ -178,18 +187,13 @@ if __name__ == '__main__':
     outer_permittivity = 11.7
 
     # Call Y_solver_2D
-    mesh, F1, F2 = Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity)
+    mesh, markers, F1, F2 = Y_solver_2D(mesh_folder, mesh_name, \
+        inner_permittivity, outer_permittivity)
 
-    # Save Correctors to XDMF File
-    xdmffile_F1 = df.XDMFFile('results/XDMF/F1_' + mesh_name + '.xdmf');
-    xdmffile_F1.write(F1)
-
-    xdmffile_F2 = df.XDMFFile('results/XDMF/F2_' + mesh_name + '.xdmf');
-    xdmffile_F2.write(F2)
 
     # Output files in PVD (for ParaView) and HDF5 (for later processing) format
-    save_PVD(output_folder + '/PVD/', 'F1_' + mesh_name, F1);
+    save_PVD(output_folder + '/PVD/', 'F1_' + mesh_name, F1)
     save_PVD(output_folder + '/PVD/', 'F2_' + mesh_name, F2)
 
-    save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F1_', F1)
-    save_HDF5(output_folder +'/XDMF/', mesh, mesh_name, 'F2_', F2)
+    save_HDF5(output_folder +'/XDMF/', 'F1_' + mesh_name, mesh, markers, F1)
+    save_HDF5(output_folder +'/XDMF/', 'F2_' + mesh_name, mesh, markers, F2)
