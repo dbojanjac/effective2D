@@ -13,8 +13,11 @@
 # output = txt file with 2x2 matrix of effective permittivity
 
 # Using FEniCS 2017.2.0
-import dolfin as df
+import petsc4py
 import sys
+petsc4py.init(['-log_view'])
+from petsc4py import PETSc
+import dolfin as df
 
 
 def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
