@@ -17,8 +17,11 @@ import petsc4py
 import sys
 petsc4py.init(sys.argv)
 from petsc4py import PETSc
-import dolfin as df
 import subprocess
+
+import dolfin as df
+import argparse
+
 import yproblem
 
 # test version like this because of portability chaos...
@@ -36,5 +39,20 @@ def main(mesh_filename, subdomains):
     #TODO toc
 
 if __name__ == "__main__":
-    subdomains = {1: 1, 2: 11.8}
-    main("mesh/hexagonal.h5", subdomains)
+    parser = argparse.ArgumentParser(description = "FEM based solver for " +
+    "calculating effective permittivity of a heterogeneous\n" +
+    "structure made of inner inclusions with inner permittivity and\n" +
+    "outside material matrix with outer permittivity")
+
+    parser.add_argument("permittivity", nargs='+',
+                        help="Permittivity accordingly to subdomain_id")
+    parser.add_argument("-o", "--output", help="Folder for outputing results")
+    # don't use -m because that is reserved and there is no bash autocomplete
+    parser.add_argument("--mesh", help="Unit cell mesh filename")
+
+    args = parser.parse_args()
+
+    subdomains = {i: args.permittivity[i-1] for i in
+                        range(1, len(args.permittivity)+1)}
+
+    main(args.mesh, subdomains)
