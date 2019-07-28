@@ -15,10 +15,17 @@
 # Using FEniCS 2017.2.0
 import petsc4py
 import sys
-petsc4py.init(['-log_view'])
+petsc4py.init(sys.argv)
 from petsc4py import PETSc
 import dolfin as df
+import subprocess
 import yproblem
+
+# test version like this because of portability chaos...
+dolfin_version = subprocess.run(['dolfin-version'],
+                                stdout=subprocess.PIPE).stdout.decode().strip('\n')
+if dolfin_version != "2017.2.0":
+    raise AssertionError("You are using {} FEniCS and code is tested using 2017.2.0 FEniCS version.".format(dolfin_version))
 
 def main(mesh_filename, subdomains):
     y = yproblem.Yproblem(mesh_filename, subdomains)
