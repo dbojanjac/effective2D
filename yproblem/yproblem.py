@@ -1,11 +1,11 @@
 # Using FEniCS 2017.2.0
-import petsc4py
 import sys
 import os
-petsc4py.init(['-log_view'])
-from petsc4py import PETSc
+import uuid
 import dolfin as df
-
+import dolfin_utils
+import dolfin_utils.meshconvert
+from dolfin_utils.meshconvert import meshconvert
 
 #---------------------------------------------------------------------------
 #                   Periodic boundary condition map
@@ -44,16 +44,13 @@ class Coeff(df.Expression):
         values[0] = self.subdomains[self.markers[cell.index]]
 
 class Yproblem:
-    #TODO: pass dict to constructor: subdomain_id : permittivity
     def __init__(self, mesh_filename, subdomains):
         self.mesh_filename = mesh_filename
         if mesh_filename.endswith(".h5"):
             self._parse_hdf5()
-        elif mesh_filename.endswith(".msh"):
-            self._parse_gmsh()
         else:
-            raise TypeError("Mesh {} has unsupported \
-                    type".format(mesh_filename))
+            if df.MPI.rank(df.mpi_comm_world()) == 0:
+                self._convert_mesh()
         self.subdomains = subdomains
         self.effective = []
 
@@ -72,8 +69,14 @@ class Yproblem:
 
         return self.mesh
 
-    def _parse_gmsh(self):
-        pass
+    def _convert_mesh(self):
+        mesh_id = str(uuid.uuid4())
+        mesh_xml = "/tmp/" + mesh_id + ".xml"
+        meshconvert.convert2xml(self.mesh_filename, mesh_xml)
+
+        self.mesh = df.Mesh(mesh_xml)
+        without_xml = os.path.splitext(mesh_xml)[0]
+        self.mesh_markers = df.MeshFunction("size_t", self.mesh, without_xml + "_physical_region.xml");
 
     def get_effective(self, V):
         # Interpolation to zeroth order polynomial
@@ -129,8 +132,9 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     V = df.FunctionSpace(mesh, "P", 1, constrained_domain = PeriodicBoundary())
 
 
-    # Weak formulation
-    #---------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
+    #                           Weak formulation
+    #--------------------------------------------------------------------------
     f1 = df.TrialFunction(V); f2 = df.TrialFunction(V)
     v1 = df.TestFunction(V);  v2 = df.TestFunction(V)
 
@@ -142,8 +146,9 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     a2 = permittivity * df.dot(df.grad(f2), df.grad(v2)) * df.dx
     L2 = - df.Dx(v2, 1) * permittivity * df.dx
 
-    # System assembly
-    #---------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
+    #                               System assembly
+    #--------------------------------------------------------------------------
     # Solution Functions (Correctors)
     f1 = df.Function(V); F1 = f1.vector()
     f2 = df.Function(V); F2 = f2.vector()
@@ -152,8 +157,9 @@ def Y_solver_2D(mesh_folder, mesh_name, inner_permittivity, outer_permittivity):
     A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1)
     A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2)
 
-    # Effective permittivity calculation
-    #---------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
+    #                       Effective permittivity calculation
+    #--------------------------------------------------------------------------
     permittivity = df.interpolate(permittivity, V)
 
     effective_11 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
