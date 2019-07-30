@@ -15,7 +15,7 @@
 # Using FEniCS 2017.2.0
 import petsc4py
 import sys
-petsc4py.init(sys.argv)
+petsc4py.init(["-log_view"])
 from petsc4py import PETSc
 import subprocess
 
@@ -24,19 +24,25 @@ import argparse
 
 import yproblem
 
-# test version like this because of portability chaos...
-dolfin_version = subprocess.run(['dolfin-version'],
-                                stdout=subprocess.PIPE).stdout.decode().strip('\n')
-if dolfin_version != "2017.2.0":
-    raise AssertionError("You are using {} FEniCS and code is tested using 2017.2.0 FEniCS version.".format(dolfin_version))
+#TODO: maybe read file?
+if df.MPI.rank(df.mpi_comm_world()) == 0:
+    # test version like this because of portability chaos...
+    dolfin_version = subprocess.run(['dolfin-version'],
+                                    stdout=subprocess.PIPE).stdout.decode().strip('\n')
+    if dolfin_version != "2017.2.0":
+        raise AssertionError("You are using {} ".format(dolfin_version) +
+                "FEniCS and code is tested using 2017.2.0 FEniCS version.")
 
 def main(mesh_filename, subdomains):
     y = yproblem.Yproblem(mesh_filename, subdomains)
     V = df.FunctionSpace(y.mesh, "P", 1,
             constrained_domain = yproblem.PeriodicBoundary())
     #TODO tic
-    print (y.get_effective(V))
+    effective = y.get_effective(V)
     #TODO toc
+
+    if df.MPI.rank(df.mpi_comm_world()) == 0:
+        print (effective)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "FEM based solver for " +
