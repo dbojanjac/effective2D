@@ -15,7 +15,7 @@
 # Using FEniCS 2017.2.0
 import petsc4py
 import sys
-petsc4py.init(["-log_view"])
+petsc4py.init(sys.argv)
 from petsc4py import PETSc
 import subprocess
 
@@ -56,7 +56,9 @@ if __name__ == "__main__":
     # don't use -m because that is reserved and there is no bash autocomplete
     parser.add_argument("--mesh", help="Unit cell mesh filename")
 
-    args = parser.parse_args()
+    args, petsc_args = parser.parse_known_args()
+
+    print ("Using PETSc args {}".format(petsc_args))
 
     subdomains = {i: args.permittivity[i-1] for i in
                         range(1, len(args.permittivity)+1)}
