@@ -50,6 +50,7 @@ class Yproblem:
             self._parse_hdf5()
         else:
             if df.MPI.rank(df.mpi_comm_world()) == 0:
+                print ("Calling FEniCS meshconvert util")
                 self._convert_mesh()
         self.subdomains = subdomains
         self.effective = []
