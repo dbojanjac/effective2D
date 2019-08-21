@@ -58,3 +58,6 @@ Plane Surface(2) = {2, -1};
 Physical Surface(2) = {2};
 
 Color Blue{ Surface{ 2 }; }
+
+Mesh.MshFileVersion = 2;
+
