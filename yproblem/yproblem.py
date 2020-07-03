@@ -1,7 +1,8 @@
 # Using FEniCS 2017.2.0
-import sys
 import os
 import uuid
+
+import numpy as np
 import dolfin as df
 import dolfin_utils
 import dolfin_utils.meshconvert
@@ -51,10 +52,9 @@ class Yproblem:
             self._parse_hdf5()
         else:
             if df.MPI.rank(df.mpi_comm_world()) == 0:
-                print ("Calling FEniCS meshconvert util")
+                print ("[Y] Calling FEniCS meshconvert util")
                 self._convert_mesh()
-        self.subdomains = subdomains
-        self.effective = []
+        self.permittivity = Coeff(self.mesh_markers, subdomains, degree=0)
 
     def _parse_hdf5(self):
         # generate relative mesh_filename, mesh_folder and mesh_name
@@ -80,48 +80,38 @@ class Yproblem:
         without_xml = os.path.splitext(mesh_xml)[0]
         self.mesh_markers = df.MeshFunction("size_t", self.mesh, without_xml + "_physical_region.xml");
 
-    def get_effective(self, V):
+    def solve(self, degree=1):
         # Interpolation to zeroth order polynomial
-        permittivity = Coeff(self.mesh_markers,
-                             self.subdomains, degree=0)
+        V = df.FunctionSpace(self.mesh, "P", degree,
+                             constrained_domain = PeriodicBoundary())
 
         #--------------------------------------------------------------------
         #                       Weak formulation
         #--------------------------------------------------------------------
-        f1 = df.TrialFunction(V); f2 = df.TrialFunction(V)
+        u1 = df.TrialFunction(V); u2 = df.TrialFunction(V)
         v1 = df.TestFunction(V);  v2 = df.TestFunction(V)
 
-        # Variational form for the first corrector (f1)
-        a1 = permittivity * df.dot(df.grad(f1), df.grad(v1)) * df.dx
-        L1 = - df.Dx(v1, 0) * permittivity * df.dx
+        # Variational form for the first corrector (u1)
+        a1 = self.permittivity * df.dot(df.grad(u1), df.grad(v1)) * df.dx
+        L1 = - df.Dx(v1, 0) * self.permittivity * df.dx
 
-        # Variational form for the second corrector (f2)
-        a2 = permittivity * df.dot(df.grad(f2), df.grad(v2)) * df.dx
-        L2 = - df.Dx(v2, 1) * permittivity * df.dx
+        # Variational form for the second corrector (u2)
+        a2 = self.permittivity * df.dot(df.grad(u2), df.grad(v2)) * df.dx
+        L2 = - df.Dx(v2, 1) * self.permittivity * df.dx
 
         #--------------------------------------------------------------------
         #                       System assembly
         #--------------------------------------------------------------------
         # Solution Functions (Correctors)
-        self.f1 = df.Function(V); F1 = self.f1.vector()
-        self.f2 = df.Function(V); F2 = self.f2.vector()
+        f1 = df.Function(V); F1 = f1.vector()
+        f2 = df.Function(V); F2 = f2.vector()
 
         # Assemble LHS, RHS and solve the system A*F=b
         A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1)
         A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2)
 
-        #--------------------------------------------------------------------
-        #               Effective permittivity calculation
-        #--------------------------------------------------------------------
-        permittivity = df.interpolate(permittivity, V)
+        permittivity = df.interpolate(self.permittivity, V)
+        d1 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
+        d2 = df.assemble(permittivity * (df.Dx(f2, 1) + 1) * df.dx)
 
-        self.effective.append(df.assemble(
-                                permittivity * (df.Dx(self.f1, 0) + 1)
-                                * df.dx))
-        self.effective.append(0)
-        self.effective.append(0)
-        self.effective.append(df.assemble(
-                                permittivity * (df.Dx(self.f2, 1) + 1)
-                                * df.dx))
-
-        return self.effective
+        return np.array([[d1, 0], [0, d2]]), (f1, f2)
