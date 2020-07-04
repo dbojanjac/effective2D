@@ -11,7 +11,13 @@ $ docker run -ti --rm -v $(pwd):/home/fenics/shared quay.io/fenicsproject/stable
 $ cd shared
 ```
 
-To generate effective params for hexagonal mesh run our demo script
+To generate effective params for hexagonal mesh you should firstly generate
+the mesh:
+```
+$ cd mesh/
+$ make hexagonal.msh
+```
+After generating the mesh, running demo script is as simple as
 ```
 $ python3 demo.py
 [Y] Calling FEniCS meshconvert util
