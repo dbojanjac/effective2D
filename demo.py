@@ -4,7 +4,7 @@ import numpy as np
 import yproblem
 
 def save_effective(output_folder, effective):
-    with open(output_folder + "/effective.txt", "wb") as f:
+    with open(output_folder + "/effective.npy", "wb") as f:
         np.save(f, effective)
 
 mesh = "mesh/hexagonal.msh"
