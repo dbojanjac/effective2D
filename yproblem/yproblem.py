@@ -110,6 +110,9 @@ class Yproblem:
         A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1)
         A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2)
 
+        #--------------------------------------------------------------------
+        #               Effective permittivity calculation
+        #--------------------------------------------------------------------
         permittivity = df.interpolate(self.permittivity, V)
         d1 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
         d2 = df.assemble(permittivity * (df.Dx(f2, 1) + 1) * df.dx)
