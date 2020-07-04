@@ -27,7 +27,7 @@ Found all vertices
 Expecting 296538 cells
 Found all cells
 Conversion done
-Geting effective parameters in 38.69988560676575 sec
+Geting effective parameters in 26.495495319366455 sec
 [[ 5.54646606  0.        ]
  [ 0.          5.84589027]]
 ```

@@ -10,8 +10,8 @@ def save_effective(output_folder, effective):
 mesh = "mesh/hexagonal.msh"
 subdomains = {1: 1, 2: 11.8}
 output_folder = "results"
-start = time.time()
 y = yproblem.Yproblem(mesh, subdomains)
+start = time.time()
 effective, (f1, f2) = y.solve()
 elapsed_time = time.time() - start
 
