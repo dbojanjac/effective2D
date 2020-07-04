@@ -31,3 +31,14 @@ Geting effective parameters in 38.69988560676575 sec
 [[ 5.54646606  0.        ]
  [ 0.          5.84589027]]
 ```
+Script will generate `results/` folder with PVD files, PDF plots and effective
+params in numpy binary format.
+
+Demo script shown above hardcodes:
+```
+mesh = "mesh/hexagonal.msh"
+subdomains = {1: 1, 2: 11.8}
+output_folder = "results"
+```
+Variable `subdomains` is a dictionary where key matches `PhysicalSurface`
+identifier passed to `gmsh` and value matches permittivity on that surface.
