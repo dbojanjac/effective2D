@@ -107,8 +107,8 @@ class Yproblem:
         f2 = df.Function(V); F2 = f2.vector()
 
         # Assemble LHS, RHS and solve the system A*F=b
-        A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1)
-        A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2)
+        A1 = df.assemble(a1);  b1 = df.assemble(L1);  df.solve(A1, F1, b1, 'gmres', 'hypre_amg')
+        A2 = df.assemble(a2);  b2 = df.assemble(L2);  df.solve(A2, F2, b2, 'gmres', 'hypre_amg')
 
         #--------------------------------------------------------------------
         #               Effective permittivity calculation
