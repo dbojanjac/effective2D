@@ -80,7 +80,9 @@ class Yproblem:
         without_xml = os.path.splitext(mesh_xml)[0]
         self.mesh_markers = df.MeshFunction("size_t", self.mesh, without_xml + "_physical_region.xml");
 
-    def solve(self, degree=1):
+    def solve(self, degree=1, dim=2):
+        assert dim in (2, 3), "Supported dim is either 2 or 3."
+
         # Interpolation to zeroth order polynomial
         V = df.FunctionSpace(self.mesh, "P", degree,
                              constrained_domain = PeriodicBoundary())
@@ -116,5 +118,12 @@ class Yproblem:
         permittivity = df.interpolate(self.permittivity, V)
         d1 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
         d2 = df.assemble(permittivity * (df.Dx(f2, 1) + 1) * df.dx)
+        if dim == 3
+            d3 = df.assemble(permittivity * df.dx)
+            permittivity_vector = np.array([d1, d2, d3])
+        else:
+            permittivity_vector = np.array([d1, d2])
 
-        return np.array([[d1, 0], [0, d2]]), (f1, f2)
+        tensor = permittivity_vector * np.identity(dim)
+
+        return tensor, (f1, f2)
