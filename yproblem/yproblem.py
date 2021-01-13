@@ -36,13 +36,17 @@ class PeriodicBoundary(df.SubDomain):
             y[1] = x[1] - 1.
 
 
-class Coeff(df.Expression):
-    def __init__(self, markers, subdomains, **kvargs):
+class Coeff(df.UserExpression):
+    def __init__(self, markers, subdomains, **kwargs):
+        super().__init__(**kwargs)
         self.markers = markers
         self.subdomains = subdomains
 
     def eval_cell(self, values, x, cell):
         values[0] = self.subdomains[self.markers[cell.index]]
+
+    def value_shape(self):
+        return ()
 
 
 class Yproblem:
@@ -51,7 +55,7 @@ class Yproblem:
         if mesh_filename.endswith(".h5"):
             self._parse_hdf5()
         else:
-            if df.MPI.rank(df.mpi_comm_world()) == 0:
+            if df.MPI.rank(df.MPI.comm_world) == 0:
                 print ("[Y] Calling FEniCS meshconvert util")
                 self._convert_mesh()
         self.permittivity = Coeff(self.mesh_markers, subdomains, degree=0)
@@ -80,8 +84,8 @@ class Yproblem:
         without_xml = os.path.splitext(mesh_xml)[0]
         self.mesh_markers = df.MeshFunction("size_t", self.mesh, without_xml + "_physical_region.xml");
 
-    def solve(self, degree=1, dim=2):
-        assert dim in (2, 3), "Supported dim is either 2 or 3."
+    def solve(self, degree=1):
+        assert self.mesh.geometric_dimension() in (2, 3), "Supported dim is either 2 or 3."
 
         # Interpolation to zeroth order polynomial
         V = df.FunctionSpace(self.mesh, "P", degree,
@@ -118,12 +122,12 @@ class Yproblem:
         permittivity = df.interpolate(self.permittivity, V)
         d1 = df.assemble(permittivity * (df.Dx(f1, 0) + 1) * df.dx)
         d2 = df.assemble(permittivity * (df.Dx(f2, 1) + 1) * df.dx)
-        if dim == 3
+        if self.mesh.geometric_dimension() == 3:
             d3 = df.assemble(permittivity * df.dx)
             permittivity_vector = np.array([d1, d2, d3])
         else:
             permittivity_vector = np.array([d1, d2])
 
-        tensor = permittivity_vector * np.identity(dim)
+        tensor = permittivity_vector * np.identity(self.mesh.geometric_dimension())
 
         return tensor, (f1, f2)
